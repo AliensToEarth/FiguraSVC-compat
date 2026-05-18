@@ -1,83 +1,106 @@
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "1.9.424" apply false
-	id "io.github.juuxel.loom-vineflower" version "1.+" apply false
-    id "io.github.pacifistmc.forgix" version "1.2.9"
+    id "architectury-plugin" version "3.4.164"
+    id "dev.architectury.loom" version "1.10.455"
+    id "maven-publish"
 }
 
 architectury {
     minecraft = rootProject.minecraft_version
+    platformSetupLoomIde()
+    fabric()
 }
 
-subprojects {
-    apply plugin: "dev.architectury.loom"
-	//apply plugin: "io.github.juuxel.loom-vineflower"
+version = mod_version + "+" + minecraft_version
+group = maven_group
 
-    loom {
-        silentMojangMappingsLicense()
+base {
+    archivesName = archives_base_name
+}
+
+loom {
+    silentMojangMappingsLicense()
+    accessWidenerPath = file("src/main/resources/figurasvc.accesswidener")
+}
+
+repositories {
+    maven { url 'https://maven.quiltmc.org/repository/release/' }
+    maven { url 'https://jitpack.io' }
+    maven { url = 'https://maven.maxhenkel.de/repository/public' }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        mappings("org.quiltmc:quilt-mappings:${minecraft_version}+build.${mappings}:intermediary-v2")
+        officialMojangMappings()
+    }
+
+    implementation("com.github.FiguraMC.luaj:luaj-core:${project.property('luaj-figura')}")
+    implementation("com.github.FiguraMC.luaj:luaj-jse:${project.property('luaj-figura')}")
+    implementation("com.neovisionaries:nv-websocket-client:${websocket}")
+    implementation "de.maxhenkel.voicechat:voicechat-api:2.5.0"
+
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    modImplementation files('libs/figura-0.1.5+1.21.8-fabric-mc.jar')
+    modRuntimeOnly "maven.modrinth:simple-voice-chat:pTfXZIdn"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = java_version.toInteger()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(java_version.toInteger())
+    }
+    withSourcesJar()
+}
+
+processResources {
+    Map<String, Object> properties = new HashMap<>()
+    properties.put("version", project.version)
+    properties.put("java_version", java_version)
+    properties.put("minecraft_version", minecraft_version)
+    properties.put("figura_version", figura_version)
+    properties.put("fabric_api_version", fabric_api_version)
+    properties.put("fabric_loader_version", fabric_loader_version)
+    properties.put("mod_id", plugin_id)
+    properties.put("display_name", display_name)
+    properties.put("description", description)
+    properties.put("authors", authors)
+
+    properties.each { k, v -> inputs.property(k, v.toString()) }
+    filesMatching("fabric.mod.json") {
+        expand properties
+    }
+}
+
+remapJar {
+    injectAccessWidener = true
+    archiveClassifier = null
+}
+
+jar {
+    archiveClassifier = "dev"
+}
+
+publishing {
+    publications {
+        mavenFabric(MavenPublication) {
+            artifactId = archives_base_name
+            from components.java
+        }
     }
 
     repositories {
-        maven { url 'https://maven.quiltmc.org/repository/release/' }
-        maven {
-            name = "Figura Maven Release"
-            url = uri("https://maven.figuramc.org/releases")
-        }
-        maven {
-            name = "Figura Maven Snapshots"
-            url = uri("https://maven.figuramc.org/snapshots")
-        }
-        maven { url 'https://jitpack.io' }
-        maven { url = 'https://maven.maxhenkel.de/repository/public' }
-        maven {
-            name = "Modrinth"
-            url = "https://api.modrinth.com/maven"
-            content {
-                includeGroup "maven.modrinth"
-            }
-        }
     }
-
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-
-        mappings loom.layered {
-			mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$mappings:intermediary-v2")
-			officialMojangMappings()
-		}
-    }
-}
-
-allprojects {
-    apply plugin: "java"
-    apply plugin: "architectury-plugin"
-    apply plugin: "maven-publish"
-
-    java_version = rootProject.java_version
-	archivesBaseName = rootProject.archives_base_name
-	version = rootProject.mod_version + "+" + rootProject.minecraft_version
-	group = rootProject.maven_group
-    figura_version = rootProject.figura_version
-
-    repositories {
-
-    }
-
-    tasks.withType(JavaCompile) {
-        options.encoding = "UTF-8"
-        options.release = 17
-    }
-
-    java {
-        withSourcesJar()
-    }
-}
-
-tasks.named("build") {
-    finalizedBy("mergeJars")
-}
-
-forgix {
-    group = rootProject.maven_group
-    mergedJarName = rootProject.archives_base_name + "-" +  rootProject.mod_version + "+" + rootProject.minecraft_version + ".jar"
 }

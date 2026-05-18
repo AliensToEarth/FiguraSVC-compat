@@ -30,7 +30,7 @@ public class ClientReceiveSoundEventData implements ISoundEvent {
 
     @Override
     public short[] getAudio() {
-        return new short[0];
+        return this.audio;
     }
 
     @LuaWhitelist

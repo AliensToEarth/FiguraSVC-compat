@@ -1,7 +1,6 @@
 package net.knownsh.figurasvc.voice.event;
 
 import de.maxhenkel.voicechat.api.events.ClientSoundEvent;
-import net.knownsh.figurasvc.FiguraSVC;
 import net.knownsh.figurasvc.voice.AudioUtils;
 import org.figuramc.figura.lua.LuaNotNil;
 import org.figuramc.figura.lua.LuaWhitelist;
@@ -23,9 +22,13 @@ public class ClientSoundEventData implements ISoundEvent {
     @LuaFieldDoc("sound_event.audio")
     public LuaTable audio;
 
+    @LuaWhitelist
+    public LuaTable rawAudioTable;
+
     public ClientSoundEventData(ClientSoundEvent event) {
         this.rawAudio = event.getRawAudio();
         this.audio = AudioUtils.pcmLuaEncode(event.getRawAudio());
+        this.rawAudioTable = this.audio;
         this.isWhispering = event::isWhispering;
     }
 
@@ -48,7 +51,10 @@ public class ClientSoundEventData implements ISoundEvent {
 
     @LuaWhitelist
     public Object __index(String arg) {
-        return "audio".equals(arg) ? audio : null;
+        return switch (arg) {
+            case "audio", "rawAudio" -> audio;
+            default -> null;
+        };
     }
 
     @LuaWhitelist
