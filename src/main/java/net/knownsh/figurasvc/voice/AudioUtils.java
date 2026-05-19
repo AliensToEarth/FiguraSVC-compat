@@ -37,15 +37,20 @@ public class AudioUtils {
         LuaTable pcmTable = new LuaTable();
         for (int i = 0; i < rawAudio.length; i++) {
             int mod = rawAudio[i];
+            pcmTable.set(i, LuaNumber.valueOf(mod));
             pcmTable.set(i + 1, LuaNumber.valueOf(mod));
         }
         return pcmTable;
     }
 
     public static short[] pcmLuaDecode(LuaTable pcmTable) {
-        short[] pcm = new short[pcmTable.length()];
-        for (int i = 0; i < pcmTable.length(); i++) {
-            pcm[i] = pcmTable.get(i + 1).toshort();
+        int length = pcmTable.length();
+        if (!pcmTable.get(0).isnil()) {
+            length += 1;
+        }
+        short[] pcm = new short[length];
+        for (int i = 0; i < length; i++) {
+            pcm[i] = pcmTable.get(i).isnil() ? pcmTable.get(i + 1).toshort() : pcmTable.get(i).toshort();
         }
         return pcm;
     }

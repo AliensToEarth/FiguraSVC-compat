@@ -28,17 +28,6 @@ public class SVCPlugin implements VoicechatPlugin {
         return FiguraSVC.PLUGIN_ID;
     }
 
-    private static boolean shouldSkipVoiceHooks() {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft == null) {
-            return true;
-        }
-        if (minecraft.level == null || minecraft.player == null || minecraft.getConnection() == null) {
-            return true;
-        }
-        return minecraft.isPaused();
-    }
-
     private static boolean isClientStateStable() {
         Minecraft minecraft = Minecraft.getInstance();
         return minecraft != null
@@ -47,8 +36,21 @@ public class SVCPlugin implements VoicechatPlugin {
             && minecraft.getConnection() != null;
     }
 
-    private static Avatar getAvatarIfReady(java.util.UUID playerId) {
-        if (playerId == null || shouldSkipVoiceHooks()) {
+    private static boolean isVoiceClientReady() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return isClientStateStable() && minecraft != null && !minecraft.isPaused();
+    }
+
+    private static boolean isWorldThreadReady() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return isVoiceClientReady() && minecraft != null && minecraft.isSameThread();
+    }
+
+    private static Avatar getAvatarIfReady(java.util.UUID playerId, boolean requireWorldThread) {
+        if (playerId == null) {
+            return null;
+        }
+        if (requireWorldThread ? !isWorldThreadReady() : !isVoiceClientReady()) {
             return null;
         }
         Avatar avatar = AvatarManager.getAvatarForPlayer(playerId);
@@ -56,6 +58,10 @@ public class SVCPlugin implements VoicechatPlugin {
             return null;
         }
         return avatar;
+    }
+
+    private static Avatar getAvatarIfReady(java.util.UUID playerId) {
+        return getAvatarIfReady(playerId, true);
     }
 
     private static short[] coerceAudio(Varargs newPCM, short[] fallback) {
@@ -182,18 +188,20 @@ public class SVCPlugin implements VoicechatPlugin {
      * @param event the ClientSoundEvent containing the sound data.
      */
     private void onLocalPlayerSpeak(ClientSoundEvent event) {
-        Avatar localPlayer = getAvatarIfReady(getLocalPlayerId());
+        Avatar localPlayer = getAvatarIfReady(getLocalPlayerId(), false);
         runLegacyEvent(localPlayer, event);
         if (localPlayer == null) {
             return;
         }
 
         EventAccessor accessor = (EventAccessor) localPlayer.luaRuntime.events;
+        LuaTable pcmTable = pcmLuaEncode(event.getRawAudio());
+
         LuaEvent microphoneEvent = getEvent(accessor, true);
-        Varargs newPCM = runAvatarEvent(localPlayer, microphoneEvent, pcmLuaEncode(event.getRawAudio()));
+        Varargs newPCM = runAvatarEvent(localPlayer, microphoneEvent, pcmTable);
         applyAudioOverride(event, newPCM);
 
         LuaEvent microphoneEventData = getHostEventData(accessor);
-        runAvatarEvent(localPlayer, microphoneEventData, new ClientSoundEventData(event));
+        runAvatarEvent(localPlayer, microphoneEventData, pcmTable, new ClientSoundEventData(event));
     }
 }
