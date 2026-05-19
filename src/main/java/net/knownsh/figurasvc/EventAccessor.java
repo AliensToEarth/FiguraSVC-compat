@@ -6,6 +6,7 @@ import org.figuramc.figura.lua.api.event.LuaEvent;
 
 public interface EventAccessor {
     LuaEvent FiguraSVC$getHostMicrophoneEvent();
+    LuaEvent FiguraSVC$getHostMicrophoneEventData();
     LuaEvent FiguraSVC$getMicrophoneEvent();
     LuaEvent FiguraSVC$getMicrophoneEventLegacy();
 }

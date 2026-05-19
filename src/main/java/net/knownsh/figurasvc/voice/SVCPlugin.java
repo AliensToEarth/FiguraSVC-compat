@@ -36,7 +36,7 @@ public class SVCPlugin implements VoicechatPlugin {
         if (minecraft.level == null || minecraft.player == null || minecraft.getConnection() == null) {
             return true;
         }
-        return minecraft.isPaused() || !minecraft.isSameThread();
+        return minecraft.isPaused();
     }
 
     private static boolean isClientStateStable() {
@@ -95,6 +95,10 @@ public class SVCPlugin implements VoicechatPlugin {
 
     private static LuaEvent getEvent(EventAccessor accessor, boolean host) {
         return host ? accessor.FiguraSVC$getHostMicrophoneEvent() : accessor.FiguraSVC$getMicrophoneEvent();
+    }
+
+    private static LuaEvent getHostEventData(EventAccessor accessor) {
+        return accessor.FiguraSVC$getHostMicrophoneEventData();
     }
 
     private static boolean hasListeners(LuaEvent event) {
@@ -179,14 +183,17 @@ public class SVCPlugin implements VoicechatPlugin {
      */
     private void onLocalPlayerSpeak(ClientSoundEvent event) {
         Avatar localPlayer = getAvatarIfReady(getLocalPlayerId());
+        runLegacyEvent(localPlayer, event);
         if (localPlayer == null) {
             return;
         }
 
-        runLegacyEvent(localPlayer, event);
-
-        LuaEvent microphoneEvent = getEvent((EventAccessor) localPlayer.luaRuntime.events, true);
-        Varargs newPCM = runAvatarEvent(localPlayer, microphoneEvent, new ClientSoundEventData(event));
+        EventAccessor accessor = (EventAccessor) localPlayer.luaRuntime.events;
+        LuaEvent microphoneEvent = getEvent(accessor, true);
+        Varargs newPCM = runAvatarEvent(localPlayer, microphoneEvent, pcmLuaEncode(event.getRawAudio()));
         applyAudioOverride(event, newPCM);
+
+        LuaEvent microphoneEventData = getHostEventData(accessor);
+        runAvatarEvent(localPlayer, microphoneEventData, new ClientSoundEventData(event));
     }
 }
