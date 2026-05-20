@@ -53,53 +53,6 @@ public class VoiceAPI {
 
     @LuaWhitelist
     @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {LuaTable.class, Number.class},
-                    argumentNames = {"pcm", "pitchFactor"}
-            ),
-            value = "voice.change_pitch"
-    )
-    public LuaTable changePitch(@LuaNotNil LuaTable pcmTable, @LuaNotNil Number pitchFactor) {
-        short[] pcmArray = AudioUtils.pcmLuaDecode(pcmTable);
-        short[] newPcmArray = new short[960];
-
-        for (int i = 0; i < newPcmArray.length; i++) {
-            double inputIndexDouble = i / pitchFactor.doubleValue();
-            int inputIndex = (int) inputIndexDouble;
-
-            if (inputIndex >= 0 && inputIndex < pcmArray.length) { // Check if inputIndex is within bounds
-                newPcmArray[i] = pcmArray[inputIndex];
-            } else {
-                newPcmArray[i] = 0;
-            }
-        }
-
-        return AudioUtils.pcmLuaEncode(newPcmArray);
-    }
-
-    /*
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {LuaTable.class, Number.class},
-                    argumentNames = {"pcm", "amplification"}
-            ),
-            value = "voice.amplify"
-    )
-    public LuaTable amplify(@LuaNotNil LuaTable table, Number amplification) {
-        LuaTable result = new LuaTable();
-        for (int i = 0; i < table.length(); i++) {
-            short sample = table.get(i).toshort();
-            int amplifiedSample = sample * amplification.shortValue();
-
-            amplifiedSample = Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, amplifiedSample));
-            result.set(i + 1, LuaValue.valueOf((short) amplifiedSample));
-        }
-        return result;
-    }*/
-
-    @LuaWhitelist
-    @LuaMethodDoc(
             overloads = {
                     @LuaMethodOverload(argumentTypes = LuaTable.class),
                     @LuaMethodOverload(argumentTypes = ISoundEvent.class),

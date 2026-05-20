@@ -16,10 +16,8 @@ import org.figuramc.figura.avatar.AvatarManager;
 import org.figuramc.figura.lua.api.event.LuaEvent;
 import org.luaj.vm2.LuaString;
 import org.luaj.vm2.LuaTable;
-import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 
-import static net.knownsh.figurasvc.voice.AudioUtils.pcmLuaDecode;
 import static net.knownsh.figurasvc.voice.AudioUtils.pcmLuaEncode;
 
 public class SVCPlugin implements VoicechatPlugin {
@@ -62,41 +60,6 @@ public class SVCPlugin implements VoicechatPlugin {
 
     private static Avatar getAvatarIfReady(java.util.UUID playerId) {
         return getAvatarIfReady(playerId, true);
-    }
-
-    private static short[] coerceAudio(Varargs newPCM, short[] fallback) {
-        if (newPCM == null) {
-            return fallback;
-        }
-        LuaValue first = newPCM.arg1();
-        if (!(first instanceof LuaTable newPCMTable)) {
-            return fallback;
-        }
-        try {
-            return pcmLuaDecode(newPCMTable);
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
-
-    private static void applyAudioOverride(ClientSoundEvent event, Varargs newPCM) {
-        if (!isClientStateStable()) {
-            return;
-        }
-        short[] updated = coerceAudio(newPCM, event.getRawAudio());
-        if (updated != null) {
-            event.setRawAudio(updated);
-        }
-    }
-
-    private static void applyAudioOverride(ClientReceiveSoundEvent.EntitySound event, Varargs newPCM) {
-        if (!isClientStateStable()) {
-            return;
-        }
-        short[] updated = coerceAudio(newPCM, event.getRawAudio());
-        if (updated != null) {
-            event.setRawAudio(updated);
-        }
     }
 
     private static LuaEvent getEvent(EventAccessor accessor, boolean host) {
@@ -173,13 +136,12 @@ public class SVCPlugin implements VoicechatPlugin {
         }
 
         LuaEvent microphoneEvent = getEvent((EventAccessor) speakingPlayer.luaRuntime.events, false);
-        Varargs newPCM = runAvatarEvent(
+        runAvatarEvent(
             speakingPlayer,
             microphoneEvent,
             LuaString.valueOf(player.getName().getString()),
             pcmLuaEncode(event.getRawAudio())
         );
-        applyAudioOverride(event, newPCM);
     }
 
     /**
@@ -198,8 +160,7 @@ public class SVCPlugin implements VoicechatPlugin {
         LuaTable pcmTable = pcmLuaEncode(event.getRawAudio());
 
         LuaEvent microphoneEvent = getEvent(accessor, true);
-        Varargs newPCM = runAvatarEvent(localPlayer, microphoneEvent, pcmTable);
-        applyAudioOverride(event, newPCM);
+        runAvatarEvent(localPlayer, microphoneEvent, pcmTable);
 
         LuaEvent microphoneEventData = getHostEventData(accessor);
         runAvatarEvent(localPlayer, microphoneEventData, pcmTable, new ClientSoundEventData(event));

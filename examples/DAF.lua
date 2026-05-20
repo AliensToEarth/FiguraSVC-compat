@@ -17,12 +17,6 @@ DAF.isMicrophoneOn = false
 --- @alias PCM number[]
 --- Raw PCM data from SVC
 
---- Set a function that modifies the audio signal (W.I.P-ish)
---- @param modifer fun(audio: PCM)
-function DAF.setAudioModifer(modifer)
-  DAF.modifier = modifer
-end
-
 --- Set a function to trigger avatar animations
 --- @param animator fun(audio: PCM)
 function DAF.setAnimation(animator)
@@ -73,7 +67,6 @@ local function runtime()
       pcall(function() -- Error Prevention (happened mostly on dev builds of Figura 1.5)
         DAF.microphoneOffTime = 0
         if DAF.animator ~= nil then DAF.animator(audio) end
-        if DAF.modifier then DAF.modifier(audio) end
       end)
     end
 

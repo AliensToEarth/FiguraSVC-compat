@@ -2,23 +2,19 @@
 
 **Simple Voice Chat integration for Figura** — now actually builds and runs on modern Fabric.
 
-Your avatar can finally hear the world (and change how it sounds) instead of just looking pretty in silence.
-
 ### What it does
 - Real-time voice processing via Simple Voice Chat
-- Lua API for voice effects, lip-sync, visualization, and voice changing
-- Full host microphone support
+- Lua API for lip-sync, visualization
 - Flashback export compatibility
 
 ### What’s new in this fork
 - Updated for Figura 0.1.5+1.21.8 (Fabric only — I kept it simple)
-- Slightly updated internal voice data format (see note below)
 - Cleaner code, better Lua integration
+- Older compatibility paths preserved  
 
 Documentation is still “in progress”.
 
-### Voice Format Note
-This fork uses a slightly updated (and extended) voice data format for new features like the improved voice API and Flashback support. Full backwards compatibility with the original format is already built in — legacy avatars work exactly as before.
+
 ## How to build this repo
 This fork is configured for the local setup and expects the Figura Fabric jar to be placed at:
 

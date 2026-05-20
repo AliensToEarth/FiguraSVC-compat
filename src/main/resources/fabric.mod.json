@@ -11,8 +11,7 @@
     "${authors}"
   ],
   "contact": {
-    "homepage": "https://derg.space/",
-    "sources": "https://github.com/KnownSH/FiguraSVC-v2"
+    "sources": "https://github.com/AliensToEarth/FiguraSVC-compat"
   },
   "license": "LGPL-2.1",
   "icon": "assets/figurasvc/icon.png",

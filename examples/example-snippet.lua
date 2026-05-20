@@ -12,10 +12,6 @@ end
 if DAF.init() then
 	local voicechat = DAF.events
 
-	voicechat.setAudioModifer(function(audio)
-		return svc:amplify(audio, 2)
-	end)
-
 	local ticker = 1
 	local originalPos = modelRoot.body.head.LowerMouth:getRot().x
 
