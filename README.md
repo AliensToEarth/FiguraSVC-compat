@@ -1,22 +1,31 @@
-> [!NOTE]  
-> FiguraSVC has been archived as I do not plan on working on this broken codebase anymore. I plan on remaking this mod from scratch. You are free to fork and rewrite the mod if this doesn't happen.
+# FiguraSVC-compat
 
-<h1 align="center"> FiguraSVC</h1>
-<p align="center">
-  <img alt="fabric" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg">
-</p>
+**Simple Voice Chat integration for Figura** — now actually builds and runs on modern Fabric.
 
+Your avatar can finally hear the world (and change how it sounds) instead of just looking pretty in silence.
 
-### FiguraSVC adds Simple Voice Chat intergation to Figura
-Currently, documentation is kinda poor as im still working on a new release of this mod, check out the examples folder, it has a demo script taken from my avatar.
+### What it does
+- Real-time voice processing via Simple Voice Chat
+- Lua API for voice effects, lip-sync, visualization, and voice changing
+- Full host microphone support
+- Flashback export compatibility
 
+### What’s new in this fork
+- Updated for Figura 0.1.5+1.21.8 (Fabric only — I kept it simple)
+- Slightly updated internal voice data format (see note below)
+- Cleaner code, better Lua integration
+
+Documentation is still “in progress”.
+
+### Voice Format Note
+This fork uses a slightly updated (and extended) voice data format for new features like the improved voice API and Flashback support. Full backwards compatibility with the original format is already built in — legacy avatars work exactly as before.
 ## How to build this repo
 This fork is configured for the local setup and expects the Figura Fabric jar to be placed at:
 
 - `libs/figura-0.1.5+1.21.8-fabric-mc.jar`
 
 ### How to build the Figura jar
-1. Clone Figura from the `1.21.8` branch:
+1. Download Figura from the `1.21.8` branch:
    - `https://github.com/FiguraMC/Figura/tree/1.21.8`
 2. Build the Fabric jar from the Figura repo.
 3. Copy the built jar into this repo at:
@@ -35,7 +44,5 @@ Notes:
 - This local setup is Fabric-only.
 - `libs/` is gitignored for local jar dependencies.
 
-
-[kofi]: https://img.shields.io/badge/Ko--fi-00b9fe?logo=kofi&logoColor=ffffff&labelColor=00b9fe
-
-## Donate: [ ![kofi][] ](https://ko-fi.com/knownsh)
+Original project by KnownSH (thank you!).  
+This is a compatibility fork by me, because archived repos make me sad.
