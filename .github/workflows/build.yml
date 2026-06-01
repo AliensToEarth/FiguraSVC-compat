@@ -1,0 +1,98 @@
+name: Build
+
+# Builds the upstream dependency mod (Figura for MC 1.21.8) from
+# source, then builds this FiguraSVC against it.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      figura_ref:
+        description: 'Figura branch/tag/commit to build'
+        default: '1.21.8'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FIGURA_REPO: FiguraMC/Figura
+  FIGURA_REF: ${{ github.event.inputs.figura_ref || '1.21.8' }}
+
+jobs:
+  build:
+    name: Build dependencies + FiguraSVC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout FiguraSVC repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # --- Figura (org.figuramc.figura) -----------------------------------
+      - name: Checkout Figura (${{ env.FIGURA_REF }})
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.FIGURA_REPO }}
+          ref: ${{ env.FIGURA_REF }}
+          path: build-deps/figura
+
+      - name: Build Figura
+        working-directory: build-deps/figura
+        run: |
+          chmod +x ./gradlew
+          # Fabric production jar (classifier "fabric-mc"); pulls in :common.
+          ./gradlew :fabric:remapJar --no-daemon --stacktrace
+
+      # --- Assemble deps/ -------------------------------------------------
+      - name: Collect dependency jars into deps/
+        run: |
+          set -euo pipefail
+          mkdir -p deps
+
+          FIGURA_JAR=$(find build-deps/figura/fabric/build/libs -name '*-fabric-mc.jar' \
+            ! -name '*-sources.jar' | head -n1)
+          if [ -z "${FIGURA_JAR:-}" ]; then
+            echo "::error::Could not locate the built Figura fabric jar"
+            find build-deps/figura -path '*/build/libs/*.jar' || true
+            exit 1
+          fi
+          cp "$FIGURA_JAR" "deps/$(basename "$FIGURA_JAR")"
+          echo "Figura -> $(basename "$FIGURA_JAR")"
+          echo "FIGURA_JAR=$(realpath "deps/$(basename "$FIGURA_JAR")")" >> "$GITHUB_ENV"
+
+      # --- FiguraSVC ------------------------------------------------------
+      - name: Build FiguraSVC
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build --no-daemon --stacktrace \
+            -Pfigura_jar="$FIGURA_JAR"
+
+      - name: Upload FiguraSVC jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: figurasvc
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
+
+      - name: Upload dependency jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencies
+          path: deps/*.jar
+          if-no-files-found: error

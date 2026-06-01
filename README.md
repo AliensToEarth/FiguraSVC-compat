@@ -18,14 +18,14 @@ Documentation is still “in progress”.
 ## How to build this repo
 This fork is configured for the local setup and expects the Figura Fabric jar to be placed at:
 
-- `libs/figura-0.1.5+1.21.8-fabric-mc.jar`
+- `deps/figura-0.1.5+1.21.8-fabric-mc.jar`
 
 ### How to build the Figura jar
 1. Download Figura from the `1.21.8` branch:
    - `https://github.com/FiguraMC/Figura/tree/1.21.8`
 2. Build the Fabric jar from the Figura repo (git checkout "1.21.8" && ./gradlew :fabric:build).
 3. Copy the built jar into this repo at:
-   - `FiguraSVC-compat/libs/figura-0.1.5+1.21.8-fabric-mc.jar`
+   - `FiguraSVC-compat/deps/figura-0.1.5+1.21.8-fabric-mc.jar`
 
 ### Build FiguraSVC-compat
 1. Make sure the Figura jar is present at the path above.
@@ -38,7 +38,7 @@ If your system default Java is newer than 21, use a Java 21 runtime for Gradle w
 Notes:
 - Forge support has been removed from this vendored fork.
 - This local setup is Fabric-only.
-- `libs/` is gitignored for local jar dependencies.
+- `deps/` is gitignored for local jar dependencies.
 
 Original project by KnownSH (thank you!).  
 This is a compatibility fork by me, because archived repos make me sad.
