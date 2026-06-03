@@ -8,7 +8,7 @@
 - Flashback export compatibility
 
 ### What’s new in this fork
-- Updated for Figura 0.1.5+1.21.8 (Fabric only — I kept it simple)
+- Updated for Figura 0.1.5+1.21.11 (Fabric only — I kept it simple)
 - Cleaner code, better Lua integration
 - Older compatibility paths preserved  
 
@@ -18,14 +18,14 @@ Documentation is still “in progress”.
 ## How to build this repo
 This fork is configured for the local setup and expects the Figura Fabric jar to be placed at:
 
-- `deps/figura-0.1.5+1.21.8-fabric-mc.jar`
+- `deps/figura-0.1.5+1.21.11-fabric-mc.jar`
 
 ### How to build the Figura jar
-1. Download Figura from the `1.21.8` branch:
-   - `https://github.com/FiguraMC/Figura/tree/1.21.8`
-2. Build the Fabric jar from the Figura repo (git checkout "1.21.8" && ./gradlew :fabric:build).
+1. Download Figura from the `1.21.11` branch:
+   - `https://github.com/FiguraMC/Figura/tree/1.21.11`
+2. Build the Fabric jar from the Figura repo (git checkout "1.21.11" && ./gradlew :fabric:build).
 3. Copy the built jar into this repo at:
-   - `FiguraSVC-compat/deps/figura-0.1.5+1.21.8-fabric-mc.jar`
+   - `FiguraSVC-compat/deps/figura-0.1.5+1.21.11-fabric-mc.jar`
 
 ### Build FiguraSVC-compat
 1. Make sure the Figura jar is present at the path above.
