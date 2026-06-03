@@ -4,7 +4,7 @@ name: Build
 # minecraft_version) from source, then builds this FiguraSVC against it.
 on:
   push:
-    branches: [ main ]
+    branches: [ main, '1.21.*' ]
   pull_request:
   workflow_dispatch:
     inputs:
