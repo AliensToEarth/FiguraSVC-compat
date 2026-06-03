@@ -49,7 +49,7 @@ dependencies {
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
-    modImplementation files('deps/figura-0.1.5+1.21.8-fabric-mc.jar')
+    modImplementation files("deps/figura-${figura_version}+${minecraft_version}-fabric-mc.jar")
     modRuntimeOnly "maven.modrinth:simple-voice-chat:pTfXZIdn"
 }
 
@@ -73,6 +73,7 @@ processResources {
     properties.put("figura_version", figura_version)
     properties.put("fabric_api_version", fabric_api_version)
     properties.put("fabric_loader_version", fabric_loader_version)
+    properties.put("minecraft_dependency", minecraft_dependency)
     properties.put("mod_id", plugin_id)
     properties.put("display_name", display_name)
     properties.put("description", description)

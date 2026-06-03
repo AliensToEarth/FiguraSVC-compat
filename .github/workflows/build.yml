@@ -1,7 +1,7 @@
 name: Build
 
-# Builds the upstream dependency mod (Figura for MC 1.21.8) from
-# source, then builds this FiguraSVC against it.
+# Builds the upstream dependency mod (Figura, matching this branch's
+# minecraft_version) from source, then builds this FiguraSVC against it.
 on:
   push:
     branches: [ main ]
@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       figura_ref:
-        description: 'Figura branch/tag/commit to build'
-        default: '1.21.8'
+        description: 'Figura branch/tag/commit to build (blank = this branch minecraft_version)'
+        default: ''
         type: string
 
 permissions:
@@ -22,7 +22,6 @@ concurrency:
 
 env:
   FIGURA_REPO: FiguraMC/Figura
-  FIGURA_REF: ${{ github.event.inputs.figura_ref || '1.21.8' }}
 
 jobs:
   build:
@@ -43,6 +42,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # --- Figura (org.figuramc.figura) -----------------------------------
+      - name: Resolve Figura ref
+        run: |
+          set -euo pipefail
+          REF="${{ github.event.inputs.figura_ref }}"
+          if [ -z "$REF" ]; then
+            REF=$(grep -E '^\s*minecraft_version\s*=' gradle.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')
+          fi
+          echo "Using Figura ref: $REF"
+          echo "FIGURA_REF=$REF" >> "$GITHUB_ENV"
+
       - name: Checkout Figura (${{ env.FIGURA_REF }})
         uses: actions/checkout@v4
         with:
