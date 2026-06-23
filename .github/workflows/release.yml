@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FIGURA_REPO: FiguraMC/Figura
+
+jobs:
+  release:
+    name: Build and release FiguraSVC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout FiguraSVC repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+
+      - name: Resolve Figura ref
+        run: |
+          set -euo pipefail
+          REF=$(grep -E '^\s*minecraft_version\s*=' gradle.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "Using Figura ref: $REF"
+          echo "FIGURA_REF=$REF" >> "$GITHUB_ENV"
+
+      - name: Checkout Figura (${{ env.FIGURA_REF }})
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.FIGURA_REPO }}
+          ref: ${{ env.FIGURA_REF }}
+          path: build-deps/figura
+
+      - name: Build Figura
+        working-directory: build-deps/figura
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :fabric:remapJar --no-daemon --stacktrace
+
+      - name: Collect dependency jars into deps/
+        run: |
+          set -euo pipefail
+          mkdir -p deps
+          FIGURA_JAR=$(find build-deps/figura/fabric/build/libs -name '*-fabric-mc.jar' \
+            ! -name '*-sources.jar' | head -n1)
+          if [ -z "${FIGURA_JAR:-}" ]; then
+            echo "::error::Could not locate the built Figura fabric jar"
+            find build-deps/figura -path '*/build/libs/*.jar' || true
+            exit 1
+          fi
+          cp "$FIGURA_JAR" "deps/$(basename "$FIGURA_JAR")"
+          echo "FIGURA_JAR=$(realpath "deps/$(basename "$FIGURA_JAR")")" >> "$GITHUB_ENV"
+
+      - name: Build FiguraSVC
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build --no-daemon --stacktrace \
+            -Pfigura_jar="$FIGURA_JAR"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            deps/*.jar
+          fail_on_unmatched_files: true
