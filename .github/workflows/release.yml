@@ -76,6 +76,5 @@ jobs:
         with:
           files: |
             build/libs/*.jar
-            !build/libs/*-sources.jar
             deps/*.jar
           fail_on_unmatched_files: true
